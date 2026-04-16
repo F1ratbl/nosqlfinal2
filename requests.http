@@ -1,0 +1,169 @@
+### Health Check
+GET http://localhost:3000/health
+
+### 1. Register User 1
+POST http://localhost:3000/register
+Content-Type: application/json
+
+{
+  "username": "alice",
+  "display_name": "Alice Wonderland"
+}
+
+### Register User 2
+POST http://localhost:3000/register
+Content-Type: application/json
+
+{
+  "username": "bob",
+  "display_name": "Bob Builder"
+}
+
+### Register User 3
+POST http://localhost:3000/register
+Content-Type: application/json
+
+{
+  "username": "charlie",
+  "display_name": "Charlie Chaplin"
+}
+
+### Test 409 Conflict (User already exists)
+POST http://localhost:3000/register
+Content-Type: application/json
+
+{
+  "username": "alice",
+  "display_name": "Alice Clone"
+}
+
+### 2. Get User
+GET http://localhost:3000/users/alice
+
+### 3. Send Friend Request (Alice -> Bob)
+POST http://localhost:3000/friend-request
+Content-Type: application/json
+
+{
+  "from": "alice",
+  "to": "bob"
+}
+
+### Send Friend Request (Bob -> Charlie)
+POST http://localhost:3000/friend-request
+Content-Type: application/json
+
+{
+  "from": "bob",
+  "to": "charlie"
+}
+
+### 4. Accept Friend Request (Bob validates Alice's request)
+POST http://localhost:3000/friend-accept
+Content-Type: application/json
+
+{
+  "from": "alice",
+  "to": "bob"
+}
+
+### Accept Friend Request (Charlie validates Bob's request)
+POST http://localhost:3000/friend-accept
+Content-Type: application/json
+
+{
+  "from": "bob",
+  "to": "charlie"
+}
+
+### 5. Get Friends (Alice's direct friends)
+GET http://localhost:3000/users/alice/friends
+
+### 6. Create Post (Alice - public)
+POST http://localhost:3000/posts
+Content-Type: application/json
+
+{
+  "username": "alice",
+  "content": "Hello world from Alice! This is public.",
+  "visibility": "public"
+}
+
+### Create Post (Bob - friends)
+POST http://localhost:3000/posts
+Content-Type: application/json
+
+{
+  "username": "bob",
+  "content": "Bob is talking to his direct friends.",
+  "visibility": "friends"
+}
+
+### Create Post (Bob - friends of friends)
+POST http://localhost:3000/posts
+Content-Type: application/json
+
+{
+  "username": "bob",
+  "content": "Bob spans 2 hops! FOF can see this.",
+  "visibility": "friends_of_friends"
+}
+
+### Create Post (Charlie - private)
+POST http://localhost:3000/posts
+Content-Type: application/json
+
+{
+  "username": "charlie",
+  "content": "A secret post that only Charlie will see.",
+  "visibility": "private"
+}
+
+### 7. Get Alice's Feed 
+# (Should see her own, Bob's public/friends/FOF, but not Charlie's private)
+GET http://localhost:3000/feed/alice
+
+### Get Charlie's Feed 
+# (Charlie is a FOF of Alice. So he shouldn't see bob's "friends" post, but will see bob's "FOF" post)
+GET http://localhost:3000/feed/charlie
+
+### 8. Get Friends of Friends (Alice FOF should be Charlie)
+GET http://localhost:3000/users/alice/friends-of-friends
+
+### 9. Get Mutual Friends (between Alice and Charlie should be Bob)
+GET http://localhost:3000/users/alice/mutual-friends/charlie
+
+### 10. Suggestions for Alice
+GET http://localhost:3000/users/alice/suggestions
+
+### 11. Send Message (Alice to Charlie -> Success, since they are FOF)
+POST http://localhost:3000/messages
+Content-Type: application/json
+
+{
+  "from": "alice",
+  "to": "charlie",
+  "content": "Hi Charlie, I am Bob's friend!"
+}
+
+### Register a complete stranger (Dave)
+POST http://localhost:3000/register
+Content-Type: application/json
+
+{
+  "username": "dave",
+  "display_name": "Dave Stranger"
+}
+
+### Test 403 Forbidden Messenger Auth (Alice to Dave -> Fails because distance > 2)
+POST http://localhost:3000/messages
+Content-Type: application/json
+
+{
+  "from": "alice",
+  "to": "dave",
+  "content": "Hi Dave! Spam message."
+}
+
+### 12. Get messages for Charlie
+GET http://localhost:3000/messages/charlie

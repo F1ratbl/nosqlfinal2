@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Facebook Clone</title>
+  <style>
+    /* ========== RESET & GLOBALS ========== */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    body {
+      background-color: #f0f2f5;
+      color: #1c1e21;
+      height: 100vh;
+      overflow: hidden;
+    }
+    input:focus, button:focus, select:focus { outline: none; }
+    a { text-decoration: none; color: inherit; cursor: pointer; }
+
+    /* ========== AUTH VIEW ========== */
+    #auth-view { display: flex; flex-direction: column; height: 100vh; background-color: #edf0f5; }
+    .auth-header {
+      background-color: #3b5998; height: 82px; display: flex; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .auth-header-inner { width: 980px; display: flex; justify-content: space-between; align-items: center; padding-top: 10px; }
+    .auth-header h1 {
+      color: transparent; font-size: 40px; font-weight: bold; letter-spacing: -1px;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="40"><text x="0" y="30" fill="white" font-family="Arial" font-weight="bold" font-size="34">facebook</text></svg>') no-repeat;
+      width: 200px; height: 40px;
+    }
+    .login-controls { display: flex; gap: 15px; color: white; font-size: 12px; }
+    .login-group { display: flex; flex-direction: column; }
+    .login-group label { margin-bottom: 4px; cursor: pointer; }
+    .login-group input { border: 1px solid #1d2a5b; padding: 3px 5px; height: 24px; width: 150px; }
+    .btn-login {
+      background-color: #4267b2; border: 1px solid #29487d; color: white; font-size: 12px; font-weight: bold;
+      padding: 2px 6px; height: 24px; cursor: pointer; align-self: flex-end;
+    }
+    .btn-login:hover { background-color: #365899; }
+    .forgot-link { color: #9cb4d8; margin-top: 4px; font-size: 11px; }
+
+    .auth-body { display: flex; justify-content: center; padding-top: 40px; width: 980px; margin: 0 auto; }
+    .auth-left { width: 56%; padding-right: 30px; }
+    .auth-left h2 { font-size: 28px; color: #0e385f; line-height: 36px; margin-bottom: 40px; font-weight: bold; }
+    .auth-left-item { display: flex; align-items: center; margin-bottom: 30px; }
+    .auth-left-item svg { width: 50px; height: 50px; margin-right: 20px; fill: #5c7595; }
+    .auth-left-item p { font-size: 16px; color: #333; }
+    .auth-left-item span { font-weight: bold; }
+    .auth-right { width: 44%; }
+    .auth-right h2 { font-size: 36px; font-weight: bold; margin-bottom: 5px; }
+    .auth-right p { font-size: 19px; color: #1d2129; margin-bottom: 20px; }
+    .signup-form { display: flex; flex-direction: column; gap: 10px; }
+    .signup-row { display: flex; gap: 10px; }
+    .signup-row input { width: 100%; }
+    .signup-form input { padding: 10px; font-size: 18px; border: 1px solid #ccd0d5; border-radius: 5px; background-color: white; }
+    .btn-signup {
+      background: linear-gradient(#67ae55, #578843); background-color: #69a74e;
+      box-shadow: inset 0 1px 1px #a4e388; border: 1px solid #3b6e22; border-radius: 5px;
+      color: white; font-size: 22px; font-weight: bold; padding: 10px 20px;
+      width: 200px; margin-top: 15px; cursor: pointer; text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    }
+    .btn-signup:hover { background: linear-gradient(#79bc64, #578843); }
+
+    /* ========== APP FRAME ========== */
+    #app-view { display: none; height: 100vh; flex-direction: column; }
+    .navbar {
+      height: 56px; background-color: #ffffff; box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      display: flex; justify-content: space-between; align-items: center; padding: 0 16px; position: sticky; top: 0; z-index: 100;
+    }
+    .nav-left { display: flex; align-items: center; gap: 10px; }
+    .fb-logo {
+      width: 40px; height: 40px; border-radius: 50%; background-color: #1877f2; color: white;
+      display: flex; justify-content: center; align-items: center; font-size: 24px; font-weight: bold; cursor: pointer;
+    }
+    .search-bar { background-color: #f0f2f5; border-radius: 20px; padding: 10px 16px; border: none; width: 240px; font-size: 15px; }
+    .nav-center { display: flex; gap: 5px; height: 100%; align-items: center; }
+    .nav-icon {
+      width: 110px; height: 48px; display: flex; justify-content: center; align-items: center;
+      border-radius: 8px; cursor: pointer; position: relative;
+    }
+    .nav-icon:hover { background-color: #f0f2f5; }
+    .nav-icon.active { border-bottom: 3px solid #1877f2; border-radius: 0; }
+    .nav-icon.active svg { fill: #1877f2; }
+    .nav-icon svg { width: 28px; height: 28px; fill: #65676b; }
+    .nav-right { display: flex; align-items: center; gap: 10px; }
+    .nav-profile {
+      display: flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 18px; cursor: pointer; font-weight: 500; font-size: 15px;
+    }
+    .nav-profile:hover { background-color: #f0f2f5; }
+    .avatar { width: 36px; height: 36px; border-radius: 50%; background-color: #d8dadf; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+    .avatar svg { width: 100%; height: 100%; fill: white; margin-top: 5px;}
+    .icon-btn {
+      width: 40px; height: 40px; border-radius: 50%; background-color: #e4e6eb;
+      display: flex; justify-content: center; align-items: center; cursor: pointer;
+    }
+    .icon-btn:hover { background-color: #d8dadf; }
+    .icon-btn svg { width: 20px; height: 20px; fill: #050505; }
+
+    /* ========== FEED PAGE ========== */
+    #page-feed { display: flex; padding-top: 20px; flex: 1; overflow: hidden; }
+    .sidebar-left, .sidebar-right { width: 300px; padding: 0 8px; overflow-y: auto; }
+    .sidebar-left ul { list-style: none; }
+    .sidebar-left li {
+      display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 8px; cursor: pointer;
+      font-weight: 500; font-size: 15px;
+    }
+    .sidebar-left li:hover { background-color: #e4e6eb; }
+    .feed-column { flex: 1; max-width: 680px; margin: 0 auto; overflow-y: auto; padding: 0 32px 50px 32px; }
+
+    /* ========== PROFILE PAGE ========== */
+    #page-profile { display: none; flex: 1; overflow-y: auto; background-color: #f0f2f5; }
+    .profile-header-wrap { background: white; box-shadow: 0 1px 2px rgba(0,0,0,0.1); display: flex; flex-direction: column; align-items: center; padding-bottom: 20px; }
+    .cover-photo {
+      width: 940px; max-width: 100%; height: 348px; background: linear-gradient(to top, #7d8b9e, #b8c6dc);
+      border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; position: relative;
+    }
+    .profile-picture-large {
+      width: 168px; height: 168px; border-radius: 50%; border: 4px solid white; background-color: #1877f2;
+      position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%); display: flex; justify-content: center; align-items: center; overflow: hidden;
+    }
+    .profile-picture-large svg { width: 140px; height: 140px; fill: white; margin-top: 20px; }
+    .profile-name { margin-top: 40px; font-size: 32px; font-weight: 700; color: #1c1e21; text-align: center; }
+    .profile-username { color: #65676b; font-size: 16px; margin-top: 5px; text-align: center; font-weight: 500; }
+    .profile-actions { margin-top: 15px; display: flex; gap: 10px; justify-content: center; }
+    .btn-blue { background-color: #1877f2; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+    .btn-gray { background-color: #e4e6eb; color: #050505; border: none; padding: 8px 12px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+    .profile-body { width: 940px; max-width: 100%; margin: 20px auto; display: flex; gap: 20px; }
+    .profile-sidebar { width: 360px; }
+    .profile-card { background: white; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.2); padding: 16px; margin-bottom: 16px; }
+    .profile-card h3 { margin-bottom: 15px; font-size: 20px; }
+    .profile-feed { flex: 1; }
+
+    /* ========== POST CREATION & CARD ========== */
+    .create-post { background: white; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.2); padding: 12px 16px; margin-bottom: 16px; }
+    .create-post-top { display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #eff2f5; padding-bottom: 12px; margin-bottom: 12px; }
+    .create-post-top input { flex: 1; background-color: #f0f2f5; border: none; border-radius: 20px; padding: 10px 16px; font-size: 17px; cursor: text; }
+    .create-post-controls { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .visibility-select { border: 1px solid #ccc; border-radius: 6px; padding: 5px 10px; font-size: 14px; font-weight: 500; color: #65676b; cursor: pointer; }
+    
+    .post-card { background: white; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.2); padding: 16px; margin-bottom: 16px; }
+    .post-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .post-header-left { display: flex; align-items: center; gap: 10px;}
+    .post-author { font-weight: bold; font-size: 15px; cursor: pointer; }
+    .post-author:hover { text-decoration: underline; }
+    .post-meta { font-size: 13px; color: #65676b; display: flex; align-items: center; gap: 5px; }
+    .post-content { font-size: 15px; line-height: 1.4; margin-bottom: 12px; }
+    
+    .post-footer { display: flex; padding-top: 5px; }
+    .post-action {
+      flex: 1; display: flex; justify-content: center; align-items: center; gap: 5px;
+      padding: 8px 0; border-radius: 4px; cursor: pointer; color: #65676b; font-weight: 600;
+    }
+    .post-action:hover { background-color: #f0f2f5; }
+    .post-action svg { width: 18px; height: 18px; fill: #65676b; }
+
+    /* ========== FRIENDS PAGE ========== */
+    #page-friends { display: none; flex: 1; overflow-y: auto; background-color: #f0f2f5; flex-direction: row; }
+    .friends-sidebar { width: 360px; background: white; padding: 16px; box-shadow: 1px 0 2px rgba(0,0,0,0.1); height: calc(100vh - 56px); position: sticky; top: 0;}
+    .friends-sidebar h3 { margin-bottom: 20px; font-size: 24px; }
+    .friends-sidebar ul { list-style: none; }
+    .friends-sidebar li { padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+    .friends-sidebar li.active { background-color: #e4e6eb; }
+    .friends-content { flex: 1; padding: 40px; max-width: 1000px; margin: 0 auto; overflow-y: auto; }
+    .friends-grid { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 20px; }
+    .friend-card { width: 220px; background: white; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.2); overflow: hidden; display: flex; flex-direction: column; cursor: pointer; }
+    .friend-card:hover { box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+    .friend-card-img { width: 100%; height: 220px; background-color: #1877f2; display: flex; justify-content: center; align-items: center; }
+    .friend-card-img svg { width: 100px; height: 100px; fill: white; margin-top: 20px; }
+    .friend-card-info { padding: 16px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+    .friend-card-name { font-weight: 600; font-size: 17px; margin-bottom: 10px; }
+
+    .alert-banner {
+      position: fixed; top: 60px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 10px 20px; border-radius: 5px; z-index: 1000; display: none;
+    }
+    .person-svg { width: 100%; height: 100%; fill: white; margin-top: 5px; }
+
+  </style>
+</head>
+<body>
+
+  <div id="alert-banner" class="alert-banner"></div>
+
+  <!-- AUTH VIEW -->
+  <div id="auth-view">
+    <div class="auth-header">
+      <div class="auth-header-inner">
+        <h1>facebook</h1>
+        <div class="login-controls">
+          <div class="login-group">
+            <label for="login-email">Username</label>
+            <input type="text" id="login-email">
+          </div>
+          <div class="login-group">
+            <label for="login-pass">Password</label>
+            <input type="password" id="login-pass">
+            <a href="#" class="forgot-link">Forgot account?</a>
+          </div>
+          <button class="btn-login" onclick="executeLogin()">Log In</button>
+        </div>
+      </div>
+    </div>
+    <div class="auth-body">
+      <div class="auth-left">
+        <h2>Connect with friends and the world around you on Facebook.</h2>
+        <div class="auth-left-item">
+          <svg viewBox="0 0 24 24"><path d="M4 22C3.44772 22 3 21.5523 3 21V3C3 2.44772 3.44772 2 4 2H20C20.5523 2 21 2.44772 21 3V21C21 21.5523 20.5523 22 20 22H4ZM5 20H19V4H5V20ZM7 6H17V8H7V6ZM7 10H17V12H7V10ZM7 14H14V16H7V14Z"></path></svg>
+          <p><span>See photos and updates</span> from friends in News Feed.</p>
+        </div>
+        <div class="auth-left-item">
+          <svg viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"></path></svg>
+          <p><span>Share what's new</span> in your life on your Timeline.</p>
+        </div>
+      </div>
+      <div class="auth-right">
+        <h2>Sign Up</h2>
+        <p>It's free and always will be.</p>
+        <div class="signup-form">
+          <div class="signup-row">
+            <input type="text" id="reg-firstname" placeholder="First name">
+            <input type="text" id="reg-lastname" placeholder="Last name">
+          </div>
+          <input type="text" id="reg-username" placeholder="Username (unique id)">
+          <input type="password" id="reg-pass" placeholder="New password">
+          <button class="btn-signup" onclick="executeRegister()">Sign Up</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- APP VIEW -->
+  <div id="app-view">
+    <div class="navbar">
+      <div class="nav-left">
+        <div class="fb-logo" onclick="showFeed()">f</div>
+        <input type="text" class="search-bar" placeholder="Search Facebook">
+      </div>
+      <div class="nav-center">
+        <div class="nav-icon active" id="nav-btn-home" onclick="showFeed()">
+          <svg viewBox="0 0 24 24"><path d="M12 3L20 10.4286V21H15V14H9V21H4V10.4286L12 3Z"></path></svg>
+        </div>
+        <div class="nav-icon" id="nav-btn-friends" onclick="showFriendsPage()">
+          <svg viewBox="0 0 24 24"><path d="M12 11C14.2091 11 16 9.20914 16 7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7C8 9.20914 9.79086 11 12 11ZM12 13C6.47715 13 2 17.4772 2 23H22C22 17.4772 17.5228 13 12 13Z"></path></svg>
+        </div>
+      </div>
+      <div class="nav-right">
+        <div class="nav-profile" onclick="openCurrentUserProfile()">
+          <div class="avatar" style="background-color: #1877f2;"><svg class="person-svg" viewBox="0 0 24 24"><path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"></path></svg></div>
+          <span id="nav-user-name">User</span>
+        </div>
+        <div class="icon-btn" onclick="logout()" title="Logout">
+          <svg viewBox="0 0 24 24"><path d="M5 22C4.44772 22 4 21.5523 4 21V3C4 2.44772 4.44772 2 5 2H19C19.5523 2 20 2.44772 20 3V6H18V4H6V20H18V18H20V21C20 21.5523 19.5523 22 19 22H5ZM15 16V13H24V11H15V8L10 12L15 16Z"></path></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: FEED -->
+    <div id="page-feed">
+      <div class="sidebar-left">
+        <ul>
+          <li onclick="openCurrentUserProfile()">
+            <div class="avatar" style="background-color: #1877f2; width: 36px; height: 36px;"><svg class="person-svg" viewBox="0 0 24 24"><path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"></path></svg></div>
+            <span id="sidebar-user-name">User</span>
+          </li>
+          <li onclick="showFriendsPage()">
+            <svg style="fill: #1877f2; width:36px; height:36px;" viewBox="0 0 24 24"><path d="M12 11C14.2091 11 16 9.20914 16 7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7C8 9.20914 9.79086 11 12 11ZM12 13C6.47715 13 2 17.4772 2 23H22C22 17.4772 17.5228 13 12 13Z"></path></svg>
+            Friends
+          </li>
+        </ul>
+      </div>
+
+      <div class="feed-column">
+        <!-- Add Post Box -->
+        <div class="create-post">
+          <div class="create-post-top">
+            <div class="avatar" style="background-color: #1877f2;"><svg class="person-svg" viewBox="0 0 24 24"><path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"></path></svg></div>
+            <input type="text" id="post-content" placeholder="What's on your mind?">
+          </div>
+          <div class="create-post-controls">
+            <select id="post-visibility" class="visibility-select">
+              <option value="public">🌍 Public</option>
+              <option value="friends">👥 Friends</option>
+              <option value="friends_of_friends">🤝 Friends of Friends</option>
+              <option value="private">🔒 Private</option>
+            </select>
+            <button class="btn-blue" onclick="createPost()">Post</button>
+          </div>
+        </div>
+
+        <!-- Posts Container -->
+        <div id="feed-container"></div>
+      </div>
+
+      <div class="sidebar-right">
+        <h4 style="color: #65676b; margin-bottom: 10px;">Suggestions</h4>
+        <div id="suggestions-list" style="display: flex; flex-direction: column; gap: 10px;"></div>
+      </div>
+    </div>
+
+    <!-- PAGE: PROFILE -->
+    <div id="page-profile">
+      <div class="profile-header-wrap">
+        <div class="cover-photo">
+          <div class="profile-picture-large">
+            <svg viewBox="0 0 24 24"><path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"></path></svg>
+          </div>
+        </div>
+        <div class="profile-name" id="prof-display-name">John Doe</div>
+        <div class="profile-username" id="prof-username">@johndoe</div>
+        <div class="profile-actions" id="prof-actions"></div>
+      </div>
+
+      <div class="profile-body">
+        <div class="profile-sidebar">
+          <div class="profile-card">
+            <h3>Intro</h3>
+            <p style="color: #65676b;">Joined recently.</p>
+          </div>
+          <div class="profile-card">
+            <h3 style="cursor:pointer;" onclick="showFriendsPage()">Friends <span id="prof-friends-count" style="color:#65676b; font-size: 14px;"></span></h3>
+            <div id="prof-friends-grid" style="display: flex; gap: 10px; flex-wrap: wrap;"></div>
+          </div>
+        </div>
+
+        <div class="profile-feed">
+          <div id="profile-posts-container"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: FRIENDS -->
+    <div id="page-friends">
+      <div class="friends-sidebar">
+        <h3>Friends</h3>
+        <ul>
+           <li class="active">All Friends</li>
+           <li>Suggestions</li>
+        </ul>
+      </div>
+      <div class="friends-content">
+        <h2>Friend Requests</h2>
+        <div id="friends-req-grid" class="friends-grid"></div>
+
+        <h2 style="margin-top: 40px;">Your Friends</h2>
+        <div id="friends-page-grid" class="friends-grid"></div>
+        
+        <h2 style="margin-top: 40px;">People you may know</h2>
+        <div id="friends-fof-grid" class="friends-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPTING -->
+  <script>
+    const API_URL = 'http://localhost:3000';
+    let currentUser = null;
+    let viewingProfile = null;
+
+    function showAlert(msg) {
+      const banner = document.getElementById('alert-banner');
+      banner.textContent = msg;
+      banner.style.display = 'block';
+      setTimeout(() => { banner.style.display = 'none'; }, 3000);
+    }
+
+    function createPostCardHTML(post, authorUsername, authorDisplayName) {
+      const timeStr = new Date(post.created_at).toLocaleString();
+      let visIcon = '🌍';
+      if(post.visibility === 'friends') visIcon = '👥';
+      if(post.visibility === 'friends_of_friends') visIcon = '🤝';
+      if(post.visibility === 'private') visIcon = '🔒';
+
+      const likeStyle = post.is_liked_by_me ? 'color: #1877f2; font-weight: bold;' : 'color: #65676b;';
+      const likeSvgFill = post.is_liked_by_me ? '#1877f2' : '#65676b';
+      const likeCountText = post.like_count > 0 ? `<div style="padding: 10px 0; border-bottom: 1px solid #eff2f5; color:#65676b; font-size:14px; display:flex; align-items:center; gap:5px;"><svg style="width:16px; fill:#1877f2;" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path></svg> ${post.like_count}</div>` : '';
+      
+      let commentsHTML = '';
+      if(post.comments && post.comments.length > 0) {
+        commentsHTML = post.comments.map(c => `
+          <div style="display:flex; gap:10px; margin-top:10px;">
+             <div class="avatar" style="background-color:#ccc; width:32px; height:32px; min-width:32px;" onclick="showProfile('${c.author}')"></div>
+             <div style="background:#f0f2f5; padding:8px 12px; border-radius:18px;">
+                <div style="font-weight:600; font-size:13px; cursor:pointer;" onclick="showProfile('${c.author}')">${c.display_name}</div>
+                <div style="font-size:14px;">${c.content}</div>
+             </div>
+          </div>
+        `).join('');
+      }
+
+      return `
+        <div class="post-card">
+          <div class="post-header">
+            <div class="post-header-left">
+              <div class="avatar" style="background-color: #1877f2; cursor:pointer;" onclick="showProfile('${authorUsername}')"><svg class="person-svg" viewBox="0 0 24 24"><path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"></path></svg></div>
+              <div>
+                <div class="post-author" onclick="showProfile('${authorUsername}')">${authorDisplayName}</div>
+                <div class="post-meta">${timeStr} · ${visIcon} ${post.visibility.replace('_', ' ')}</div>
+              </div>
+            </div>
+          </div>
+          <div class="post-content">${post.content}</div>
+          ${likeCountText}
+          <div class="post-footer" style="margin-top:0px;">
+            <div class="post-action" style="${likeStyle}" onclick="toggleLike('${post.post_id}')">
+              <svg viewBox="0 0 24 24" style="fill: ${likeSvgFill};"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path></svg>
+              Like
+            </div>
+            <div class="post-action" onclick="document.getElementById('comment-input-${post.post_id}').focus()">
+              <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"></path></svg>
+              Comment
+            </div>
+          </div>
+          <div class="post-comments-section" style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #eff2f5;">
+             ${commentsHTML}
+             <div style="display:flex; gap:10px; margin-top:15px; align-items:center;">
+                <div class="avatar" style="background-color:#1877f2; width:32px; height:32px; min-width:32px;"></div>
+                <input type="text" id="comment-input-${post.post_id}" placeholder="Write a comment..." style="flex:1; border-radius:20px; border:1px solid #ccc; background:#f0f2f5; padding:8px 12px; outline:none;" onkeypress="if(event.key==='Enter') postComment('${post.post_id}')">
+                <button class="btn-blue" onclick="postComment('${post.post_id}')" style="padding: 6px 12px;">➤</button>
+             </div>
+          </div>
+        </div>
+      `;
+    }
+
+    async function toggleLike(postId) {
+      if(!currentUser) return;
+      try {
+        await fetch(`${API_URL}/posts/${postId}/like`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: currentUser.username })
+        });
+        if(document.getElementById('page-feed').style.display === 'flex') loadFeed(); 
+        else loadProfilePosts(viewingProfile.username, viewingProfile.display_name);
+      } catch(e) {}
+    }
+
+    async function postComment(postId) {
+      if(!currentUser) return;
+      const input = document.getElementById(`comment-input-${postId}`);
+      const content = input.value.trim();
+      if(!content) return;
+      
+      try {
+        await fetch(`${API_URL}/posts/${postId}/comments`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: currentUser.username, content })
+        });
+        if(document.getElementById('page-feed').style.display === 'flex') loadFeed(); 
+        else loadProfilePosts(viewingProfile.username, viewingProfile.display_name);
+      } catch(e) {}
+    }
+
+    // ----- AUTHENTICATION -----
+    async function executeRegister() {
+      const firstname = document.getElementById('reg-firstname').value.trim();
+      const lastname = document.getElementById('reg-lastname').value.trim();
+      const username = document.getElementById('reg-username').value.trim();
+      if(!username || !firstname) return showAlert("Please enter your name and username.");
+      const display_name = `${firstname} ${lastname}`.trim();
+
+      try {
+        const res = await fetch(`${API_URL}/register`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, display_name })
+        });
+        if (res.ok || res.status === 409) await fetchUserForAuth(username);
+        else showAlert("Registration error");
+      } catch (e) { showAlert("Server connection failed."); }
+    }
+
+    async function executeLogin() {
+      const username = document.getElementById('login-email').value.trim();
+      if(!username) return showAlert("Please enter a username.");
+      await fetchUserForAuth(username);
+    }
+
+    async function fetchUserForAuth(username) {
+      try {
+        const res = await fetch(`${API_URL}/users/${username}`);
+        if(res.ok) {
+          const data = await res.json();
+          loginUser(data.user);
+        } else { showAlert("User not found in the database. Please sign up."); }
+      } catch (e) { showAlert("Server connection failed."); }
+    }
+
+    function loginUser(user) {
+      currentUser = user;
+      document.getElementById('auth-view').style.display = 'none';
+      document.getElementById('app-view').style.display = 'flex';
+      document.getElementById('nav-user-name').innerText = user.display_name.split(' ')[0];
+      document.getElementById('sidebar-user-name').innerText = user.display_name;
+      document.getElementById('post-content').placeholder = `What's on your mind, ${user.display_name.split(' ')[0]}?`;
+      showFeed();
+    }
+
+    function logout() {
+      currentUser = null; viewingProfile = null;
+      document.getElementById('auth-view').style.display = 'flex';
+      document.getElementById('app-view').style.display = 'none';
+      document.getElementById('login-email').value = '';
+      document.getElementById('reg-username').value = '';
+    }
+
+    // ----- ROUTING -----
+    function showFeed() {
+      document.getElementById('page-profile').style.display = 'none';
+      document.getElementById('page-friends').style.display = 'none';
+      document.getElementById('page-feed').style.display = 'flex';
+      document.getElementById('nav-btn-home').classList.add('active');
+      document.getElementById('nav-btn-friends').classList.remove('active');
+      loadFeed();
+      loadSuggestions();
+    }
+
+    function openCurrentUserProfile() {
+      if(currentUser) showProfile(currentUser.username);
+    }
+
+    async function showProfile(username) {
+      document.getElementById('page-feed').style.display = 'none';
+      document.getElementById('page-friends').style.display = 'none';
+      document.getElementById('nav-btn-home').classList.remove('active');
+      document.getElementById('nav-btn-friends').classList.remove('active');
+      document.getElementById('page-profile').style.display = 'block';
+      
+      const res = await fetch(`${API_URL}/users/${username}`);
+      if(res.ok) {
+         const data = await res.json();
+         viewingProfile = data.user;
+         document.getElementById('prof-display-name').innerText = viewingProfile.display_name;
+         document.getElementById('prof-username').innerText = '@' + viewingProfile.username;
+         
+         setupProfileActions();
+         loadProfileFriends(viewingProfile.username);
+         loadProfilePosts(viewingProfile.username, viewingProfile.display_name);
+      }
+    }
+
+    // ----- FRIENDS PAGE -----
+    async function showFriendsPage() {
+      document.getElementById('page-feed').style.display = 'none';
+      document.getElementById('page-profile').style.display = 'none';
+      document.getElementById('page-friends').style.display = 'flex';
+      document.getElementById('nav-btn-home').classList.remove('active');
+      document.getElementById('nav-btn-friends').classList.add('active');
+      
+      if(!currentUser) return;
+      const reqGrid = document.getElementById('friends-req-grid');
+      const grid = document.getElementById('friends-page-grid');
+      const fofGrid = document.getElementById('friends-fof-grid');
+      reqGrid.innerHTML = '';
+      grid.innerHTML = '<div style="padding:20px;">Loading...</div>';
+      fofGrid.innerHTML = '';
+      
+      try {
+        const reqRes = await fetch(`${API_URL}/users/${currentUser.username}/friend-requests`);
+        const reqData = await reqRes.json();
+        if(reqData.requests && reqData.requests.length > 0) {
+          reqGrid.innerHTML = reqData.requests.map(f => `
+            <div class="friend-card" onclick="showProfile('${f.username}')">
+              <div class="friend-card-img" style="background-color:#E91E63;"><svg class="person-svg" viewBox="0 0 24 24"><path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"></path></svg></div>
+              <div class="friend-card-info">
+                 <div class="friend-card-name">${f.display_name}</div>
+                 <div style="display:flex; gap:5px; margin-top:10px;">
+                    <button class="btn-blue" style="flex:1; font-size: 13px;" onclick="event.stopPropagation(); acceptFriendReq('${f.username}').then(()=>showFriendsPage());">Accept</button>
+                    <button class="btn-gray" style="flex:1; font-size: 13px;" onclick="event.stopPropagation(); rejectFriendReq('${f.username}').then(()=>showFriendsPage());">Decline</button>
+                 </div>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          reqGrid.innerHTML = '<div style="color:#65676b; padding:20px;">No pending requests.</div>';
+        }
+
+        const res = await fetch(`${API_URL}/users/${currentUser.username}/friends`);
+        const data = await res.json();
+        if(data.friends && data.friends.length > 0) {
+          grid.innerHTML = data.friends.map(f => `
+            <div class="friend-card" onclick="showProfile('${f.username}')">
+              <div class="friend-card-img"><svg class="person-svg" viewBox="0 0 24 24"><path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"></path></svg></div>
+              <div class="friend-card-info">
+                 <div class="friend-card-name">${f.display_name}</div>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          grid.innerHTML = '<div style="color:#65676b; padding:20px;">You have no friends yet.</div>';
+        }
+
+        const suggRes = await fetch(`${API_URL}/users/${currentUser.username}/suggestions`);
+        const suggData = await suggRes.json();
+        if(suggData.suggestions && suggData.suggestions.length > 0) {
+           fofGrid.innerHTML = suggData.suggestions.map(s => `
+            <div class="friend-card" onclick="showProfile('${s.user.username}')">
+              <div class="friend-card-img" style="background-color:#4CAF50;"><svg class="person-svg" viewBox="0 0 24 24"><path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"></path></svg></div>
+              <div class="friend-card-info">
+                 <div class="friend-card-name">${s.user.display_name}</div>
+                 <div style="font-size:13px; color:#65676b; margin-bottom:10px;">${s.mutual_count} mutual friends</div>
+                 <button class="btn-blue" style="width:100%;" onclick="event.stopPropagation(); sendFriendReq('${s.user.username}').then(()=>{this.innerText='Sent'; this.disabled=true;});">Add Friend</button>
+              </div>
+            </div>
+          `).join('');
+        }
+      } catch(e) {}
+    }
+
+    // ----- PROFILE PAGES -----
+    async function setupProfileActions() {
+      const actionsDiv = document.getElementById('prof-actions');
+      actionsDiv.innerHTML = '';
+      if(currentUser.username === viewingProfile.username) {
+        actionsDiv.innerHTML = `<button class="btn-gray">Edit Profile</button> <button class="btn-blue">+ Add to Story</button>`;
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_URL}/users/${currentUser.username}/relationship/${viewingProfile.username}`);
+        const data = await res.json();
+
+        actionsDiv.innerHTML = '';
+        if(data.status === 'friend') {
+          actionsDiv.innerHTML = `
+            <button class="btn-gray" onclick="removeFriend('${viewingProfile.username}').then(()=>setupProfileActions())">✓ Friends</button>
+            <button class="btn-blue" onclick="testMessage('${viewingProfile.username}')">Message</button>
+          `;
+        } else if(data.status === 'request_sent') {
+          actionsDiv.innerHTML = `
+            <button class="btn-gray" onclick="cancelFriendReq('${viewingProfile.username}').then(()=>setupProfileActions())">Cancel Request</button>
+            <button class="btn-gray" onclick="testMessage('${viewingProfile.username}')">Message</button>
+          `;
+        } else if(data.status === 'request_received') {
+          actionsDiv.innerHTML = `
+            <button class="btn-blue" onclick="acceptFriendReq('${viewingProfile.username}').then(()=>setupProfileActions())">Accept Request</button>
+            <button class="btn-gray" onclick="rejectFriendReq('${viewingProfile.username}').then(()=>setupProfileActions())">Decline</button>
+          `;
+        } else {
+          actionsDiv.innerHTML = `
+            <button class="btn-blue" onclick="sendFriendReq('${viewingProfile.username}').then(()=>setupProfileActions())">Add Friend</button>
+            <button class="btn-gray" onclick="testMessage('${viewingProfile.username}')">Message</button>
+          `;
+        }
+      } catch (e) {}
+    }
+
+    async function loadProfileFriends(username) {
+      try {
+        const res = await fetch(`${API_URL}/users/${username}/friends`);
+        const data = await res.json();
+        document.getElementById('prof-friends-count').innerText = `(${data.count})`;
+        const grid = document.getElementById('prof-friends-grid');
+        grid.innerHTML = '';
+        data.friends.slice(0, 6).forEach(f => {
+          grid.innerHTML += `
+            <div style="cursor:pointer; text-align:center; width: 100px;" onclick="showProfile('${f.username}')">
+               <div style="width:100%; height:100px; background-color:#1877f2; border-radius:8px; margin-bottom:5px;"></div>
+               <span style="font-size:13px; font-weight:600;">${f.display_name.split(' ')[0]}</span>
+            </div>
+          `;
+        });
+      } catch(e) {}
+    }
+
+    async function loadProfilePosts(authorUsername, authorDisplayName) {
+      const container = document.getElementById('profile-posts-container');
+      container.innerHTML = '<div style="text-align:center; padding: 20px;">Loading posts...</div>';
+      try {
+        const res = await fetch(`${API_URL}/users/${authorUsername}/posts?viewer=${currentUser.username}`);
+        const data = await res.json();
+        if(data.posts && data.posts.length > 0) {
+          container.innerHTML = data.posts.map(p => createPostCardHTML(p, authorUsername, authorDisplayName)).join('');
+        } else {
+          container.innerHTML = '<div style="background:white; padding: 20px; border-radius:8px; text-align:center; color:#65676b;">No posts written.</div>';
+        }
+      } catch(e) {}
+    }
+
+    // ----- FEED & ACTIONS -----
+    async function createPost() {
+      if(!currentUser) return;
+      const content = document.getElementById('post-content').value.trim();
+      const visibility = document.getElementById('post-visibility').value;
+      if(!content) return;
+      try {
+        const res = await fetch(`${API_URL}/posts`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: currentUser.username, content, visibility })
+        });
+        if(res.ok) {
+          document.getElementById('post-content').value = '';
+          if(document.getElementById('page-feed').style.display === 'flex') loadFeed(); 
+          else loadProfilePosts(currentUser.username, currentUser.display_name);
+        }
+      } catch(e) {}
+    }
+
+    async function loadFeed() {
+      if(!currentUser) return;
+      const container = document.getElementById('feed-container');
+      container.innerHTML = '<div style="text-align:center; padding: 20px;">Loading feed...</div>';
+      try {
+        const res = await fetch(`${API_URL}/feed/${currentUser.username}`);
+        const data = await res.json();
+        if(data.feed && data.feed.length > 0) {
+          container.innerHTML = data.feed.map(p => createPostCardHTML(p, p.author, p.author_display_name)).join('');
+        } else {
+          container.innerHTML = '<div style="text-align:center; padding: 40px; color: #65676b;">No posts in your feed yet! Add friends or create a post to see them here.</div>';
+        }
+      } catch(e) {}
+    }
+
+    async function loadSuggestions() {
+      if(!currentUser) return;
+      const suggBox = document.getElementById('suggestions-list');
+      try {
+        const res = await fetch(`${API_URL}/users/${currentUser.username}/suggestions`);
+        const data = await res.json();
+        suggBox.innerHTML = '';
+        if(data.suggestions && data.suggestions.length > 0) {
+          data.suggestions.forEach(item => {
+            suggBox.innerHTML += `
+               <div style="display:flex; justify-content:space-between; align-items:center;">
+                 <div style="display:flex; align-items:center; gap:10px; cursor:pointer;" onclick="showProfile('${item.user.username}')">
+                   <div class="avatar" style="background-color:#1877f2; min-width:36px;"></div>
+                   <div>
+                     <div style="font-weight:600; font-size:14px;">${item.user.display_name}</div>
+                     <div style="color:#65676b; font-size:12px;">${item.mutual_count} mutual friends</div>
+                   </div>
+                 </div>
+                 <button class="btn-gray" style="font-size:16px; padding:4px 8px; cursor:pointer;" onclick="event.stopPropagation(); const btn=this; sendFriendReq('${item.user.username}').then(()=>{btn.innerText='Sent'; btn.disabled=true;});" title="Add Friend">+</button>
+               </div>
+            `;
+          });
+        } else {
+          suggBox.innerHTML = '<span style="color:#888; font-size:13px;">No suggestions right now.</span>';
+        }
+      } catch(e) {}
+    }
+
+    async function sendFriendReq(targetUser) {
+      if(!currentUser) return;
+      try {
+        const res = await fetch(`${API_URL}/friend-request`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ from: currentUser.username, to: targetUser })
+        });
+        if(res.ok || res.status===409) {
+           showAlert("Friend request sent!");
+        }
+      } catch(e){}
+    }
+
+    async function acceptFriendReq(senderUser) {
+      if(!currentUser) return;
+      await fetch(`${API_URL}/friend-accept`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ from: senderUser, to: currentUser.username })
+      });
+      showAlert("Friend request accepted!");
+    }
+
+    async function rejectFriendReq(senderUser) {
+      if(!currentUser) return;
+      await fetch(`${API_URL}/friend-reject`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ from: senderUser, to: currentUser.username })
+      });
+      showAlert("Friend request dismissed.");
+    }
+
+    async function removeFriend(targetUser) {
+      if(!currentUser) return;
+      await fetch(`${API_URL}/friend-remove`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user1: currentUser.username, user2: targetUser })
+      });
+      showAlert("Unfriended.");
+    }
+    
+    async function cancelFriendReq(targetUser) {
+      if(!currentUser) return;
+      await fetch(`${API_URL}/friend-reject`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ from: currentUser.username, to: targetUser })
+      });
+      showAlert("Friend request cancelled.");
+    }
+
+    async function testMessage(targetUser) {
+       showAlert("Messenger mockup: Opened chat with " + targetUser);
+    }
+  </script>
+</body>
+</html>
